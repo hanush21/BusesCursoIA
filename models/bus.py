@@ -3,7 +3,7 @@ class Bus:
         self.bus_id = bus_id
         self.placa = placa
         self.capacidad = capacidad
-        self.billetes = []  # Lista para almacenar billetes asignados a este bus
+        self.billetes = [] 
 
     def agregar_billete(self, billete):
         if len(self.billetes) < self.capacidad:
