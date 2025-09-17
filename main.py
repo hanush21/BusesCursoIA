@@ -3,7 +3,7 @@ from services.persistence import (
     guardar_buses, guardar_clientes, guardar_billetes
 )
 from services.billetes_service import venda, devolucio
-from services.billetes_service import estat  # adaptarlo para imprimir según buses
+from services.billetes_service import estat 
 
 def main():
     buses = cargar_buses()
