@@ -1,9 +1,9 @@
 class Bus:
-    def __init__(self, bus_id, placa, capacidad):
+    def init(self, bus_id, placa, capacidad):
         self.bus_id = bus_id
         self.placa = placa
         self.capacidad = capacidad
-        self.billetes = [] 
+        self.billetes = []
 
     def agregar_billete(self, billete):
         if len(self.billetes) < self.capacidad:
@@ -11,5 +11,5 @@ class Bus:
         else:
             raise Exception("Capacidad del bus alcanzada")
 
-    def __str__(self):
+    def str(self):
         return f"Bus {self.placa} con capacidad {self.capacidad}"
