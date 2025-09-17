@@ -1,44 +1,53 @@
-from services.billetes_service import estat, venda, devolucio
-from services.bus import Bus
-from services.cliente import Cliente
-from services.billete import Billete
+from services.persistence import (
+    cargar_buses, cargar_clientes, cargar_billetes,
+    guardar_buses, guardar_clientes, guardar_billetes
+)
+from services.billetes_service import venda, devolucio
+from services.billetes_service import estat  # adaptarlo para imprimir según buses
 
 def main():
-    total_plazas = int(input("Ingrese el número de asientos\n"))
-    plazas_libres = total_plazas
-    plazas_vendidas = 0
+    buses = cargar_buses()
+    clientes = cargar_clientes()
+    billetes = cargar_billetes(buses, clientes)
 
-    # Para ejemplificar múltiples buses y clientes en el futuro:
-    buses = []
-    clientes = []
-    billetes = []
+    # Si no hay buses cargados, crear uno inicial para demo
+    if not buses:
+        from services.bus import Bus
+        bus_demo = Bus(bus_id=1, placa="ABC123", capacidad=50)
+        buses.append(bus_demo)
 
     salir = False
-    print("1.- Venta de billetes.")
-    print("2.- Devolución de billetes.")
-    print("3.- Estado de la venta.")
-    print("0.- Salir.")
-    estat(total_plazas, plazas_libres, plazas_vendidas)
     while not salir:
+        print("1.- Venta de billetes.")
+        print("2.- Devolución de billetes.")
+        print("3.- Estado de la venta.")
+        print("0.- Salir.")
         pregunta = input("Seleccione una opción: ")
         if pregunta == "1":
-            plazas_demanda = int(input("Ingrese cantidad a vender: "))
-            plazas_libres, plazas_vendidas, mensaje, exito = venda(plazas_demanda, plazas_libres, plazas_vendidas)
+            demanda = int(input("Cantidad a vender: "))
+            exito, mensaje = venda(demanda, buses, clientes, billetes)
             print(mensaje)
             if exito:
-                estat(total_plazas, plazas_libres, plazas_vendidas)
+                guardar_buses(buses)
+                guardar_clientes(clientes)
+                guardar_billetes(billetes)
         elif pregunta == "2":
-            plazas_devolucion = int(input("Ingrese cantidad a devolver: "))
-            plazas_libres, plazas_vendidas, mensaje, exito = devolucio(plazas_devolucion, total_plazas, plazas_libres, plazas_vendidas)
+            cantidad = int(input("Cantidad a devolver: "))
+            exito, mensaje = devolucio(cantidad, billetes, buses)
             print(mensaje)
             if exito:
-                estat(total_plazas, plazas_libres, plazas_vendidas)
+                guardar_buses(buses)
+                guardar_clientes(clientes)
+                guardar_billetes(billetes)
         elif pregunta == "3":
+            total_plazas = sum(bus.capacidad for bus in buses)
+            plazas_vendidas = len(billetes)
+            plazas_libres = total_plazas - plazas_vendidas
             estat(total_plazas, plazas_libres, plazas_vendidas)
         elif pregunta == "0":
             salir = True
         else:
-            print("Opción no válida. Por favor, seleccione una opción correcta.")
+            print("Opción no válida.")
 
 if __name__ == "__main__":
     main()
