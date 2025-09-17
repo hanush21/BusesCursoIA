@@ -1,4 +1,5 @@
-models/cliente.py
+
+
 class Cliente:
     def init(self, cliente_id, nombre, apellido=None):
         self.cliente_id = cliente_id
