@@ -1,14 +1,12 @@
-
+models/cliente.py
 class Cliente:
-    def __init__(self, cliente_id, nombre, apellido=None):
+    def init(self, cliente_id, nombre, apellido=None):
         self.cliente_id = cliente_id
         self.nombre = nombre
         self.apellido = apellido
 
     def nombre_completo(self):
-        if self.apellido:
-            return f"{self.nombre} {self.apellido}"
-        return self.nombre
+        return f"{self.nombre} {self.apellido}" if self.apellido else self.nombre
 
-    def __str__(self):
+    def str(self):
         return f"Cliente: {self.nombre_completo()}"

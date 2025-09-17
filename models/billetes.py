@@ -1,11 +1,11 @@
 class Billete:
-    def __init__(self, billete_id, bus, cliente, asiento, fecha):
+    def init(self, billete_id, bus, cliente, asiento, fecha):
         self.billete_id = billete_id
-        self.bus = bus           # Objeto bus
-        self.cliente = cliente   # Objeto cliente
+        self.bus = bus
+        self.cliente = cliente
         self.asiento = asiento
         self.fecha = fecha
 
-    def __str__(self):
+    def str(self):
         return (f"Billete {self.billete_id} para {self.cliente.nombre_completo()} en "
                 f"bus {self.bus.placa} asiento {self.asiento} fecha {self.fecha}")
