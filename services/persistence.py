@@ -3,9 +3,8 @@ import os
 from models.bus import Bus
 from models.cliente import Cliente
 from models.billetes import Billete
-import os
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 BUSES_FILE = os.path.join(BASE_DIR, "data", "buses.csv")
 CLIENTES_FILE = os.path.join(BASE_DIR, "data", "clientes.csv")
 BILLETES_FILE = os.path.join(BASE_DIR, "data", "billetes.csv")
@@ -24,8 +23,7 @@ def cargar_buses():
         with open(BUSES_FILE, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                buses.append(Bus(int(row["bus_id"]), row["placa"], int(row["capacidad"]))
-                )
+                buses.append(Bus(int(row["bus_id"]), row["placa"], int(row["capacidad"])))
     except FileNotFoundError:
         pass
     return buses
@@ -72,13 +70,7 @@ def cargar_billetes(buses, clientes):
                 bus = next((b for b in buses if b.bus_id == int(row["bus_id"])), None)
                 cliente = next((c for c in clientes if c.cliente_id == int(row["cliente_id"])), None)
                 if bus and cliente:
-                    billete = Billete(
-                        int(row["billete_id"]),
-                        bus,
-                        cliente,
-                        int(row["asiento"]),
-                        row["fecha"]
-                    )
+                    billete = Billete(int(row["billete_id"]), bus, cliente, int(row["asiento"]), row["fecha"])
                     billetes.append(billete)
                     bus.billetes.append(billete)
     except FileNotFoundError:

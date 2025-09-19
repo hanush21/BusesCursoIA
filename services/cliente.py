@@ -24,7 +24,6 @@ def delete_cliente(clientes: List[Cliente], cliente_id: int, billetes: list) -> 
     c = find_by_id(clientes, cliente_id)
     if not c:
         return False
-    # Evitar borrar si tiene billetes asociados
     if any(billete.cliente.cliente_id == c.cliente_id for billete in billetes):
         raise ValueError("No se puede eliminar un cliente con billetes asociados. Cancela los billetes primero.")
     clientes.remove(c)
