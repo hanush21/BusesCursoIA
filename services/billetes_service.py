@@ -15,7 +15,7 @@ def _next_billete_id(billetes: List[Billete]) -> int:
 def crear_billete(bus: Bus, cliente: Cliente, billetes: List[Billete], asiento: Optional[int] = None, fecha: Optional[str] = None) -> Tuple[bool, str, Optional[Billete]]:
     if fecha is None:
         fecha = str(date.today())
-    # Determinar asiento
+    
     libres = bus.asientos_disponibles()
     if not libres:
         return False, "Bus sin plazas disponibles", None
@@ -34,14 +34,14 @@ def cancelar_billete(billetes: List[Billete], billete_id: int) -> Tuple[bool, st
     target = next((b for b in billetes if b.billete_id == int(billete_id)), None)
     if not target:
         return False, "Billete no encontrado"
-    # eliminar del bus y de la lista global
+    
     if target in target.bus.billetes:
         target.bus.billetes.remove(target)
     billetes.remove(target)
     return True, f"Billete {billete_id} cancelado"
 
 def venda(demanda: int, buses: List[Bus], clientes: List[Cliente], billetes: List[Billete]) -> Tuple[bool, str]:
-    # Distribuye automáticamente entre buses disponibles. Crea clientes 'Anonimo N' si la lista está vacía.
+    
     total_capacidad = sum(b.capacidad for b in buses)
     plazas_vendidas = len(billetes)
     plazas_libres = total_capacidad - plazas_vendidas
@@ -50,11 +50,10 @@ def venda(demanda: int, buses: List[Bus], clientes: List[Cliente], billetes: Lis
     if demanda > plazas_libres:
         return False, f"No hay plazas suficientes. Disponibles: {plazas_libres}"
     if not clientes:
-        # crear un cliente genérico
         clientes.append(Cliente(1, "Anonimo"))
-    # usar el primer cliente por simplicidad
     cliente = clientes[0]
     vendidos = 0
+    
     for bus in buses:
         while bus.asientos_disponibles() and vendidos < demanda:
             ok, msg, _ = crear_billete(bus, cliente, billetes)
