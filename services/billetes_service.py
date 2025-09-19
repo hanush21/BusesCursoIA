@@ -1,51 +1,77 @@
+from datetime import date
+from typing import List, Tuple, Optional
 from models.bus import Bus
 from models.cliente import Cliente
 from models.billetes import Billete
 
-def estat(total_plazas, plazas_libres, plazas_vendidas):
+def estat(total_plazas: int, plazas_libres: int, plazas_vendidas: int) -> None:
     print(f"Total de asientos: {total_plazas}")
     print(f"Plazas libres: {plazas_libres}")
     print(f"Plazas vendidas: {plazas_vendidas}")
 
-def venda(demanda, buses, clientes, billetes):
-    total_capacidad = sum(bus.capacidad for bus in buses)
+def _next_billete_id(billetes: List[Billete]) -> int:
+    return max([b.billete_id for b in billetes], default=0) + 1
+
+def crear_billete(bus: Bus, cliente: Cliente, billetes: List[Billete], asiento: Optional[int] = None, fecha: Optional[str] = None) -> Tuple[bool, str, Optional[Billete]]:
+    if fecha is None:
+        fecha = str(date.today())
+    # Determinar asiento
+    libres = bus.asientos_disponibles()
+    if not libres:
+        return False, "Bus sin plazas disponibles", None
+    if asiento is not None:
+        if asiento not in libres:
+            return False, f"Asiento {asiento} no disponible en bus {bus.placa}", None
+    else:
+        asiento = libres[0]
+    new_id = _next_billete_id(billetes)
+    billete = Billete(new_id, bus, cliente, asiento, fecha)
+    bus.agregar_billete(billete)
+    billetes.append(billete)
+    return True, f"Billete creado: {billete}", billete
+
+def cancelar_billete(billetes: List[Billete], billete_id: int) -> Tuple[bool, str]:
+    target = next((b for b in billetes if b.billete_id == int(billete_id)), None)
+    if not target:
+        return False, "Billete no encontrado"
+    # eliminar del bus y de la lista global
+    if target in target.bus.billetes:
+        target.bus.billetes.remove(target)
+    billetes.remove(target)
+    return True, f"Billete {billete_id} cancelado"
+
+def venda(demanda: int, buses: List[Bus], clientes: List[Cliente], billetes: List[Billete]) -> Tuple[bool, str]:
+    # Distribuye automáticamente entre buses disponibles. Crea clientes 'Anonimo N' si la lista está vacía.
+    total_capacidad = sum(b.capacidad for b in buses)
     plazas_vendidas = len(billetes)
     plazas_libres = total_capacidad - plazas_vendidas
+    if demanda <= 0:
+        return False, "La demanda debe ser mayor que 0"
+    if demanda > plazas_libres:
+        return False, f"No hay plazas suficientes. Disponibles: {plazas_libres}"
+    if not clientes:
+        # crear un cliente genérico
+        clientes.append(Cliente(1, "Anonimo"))
+    # usar el primer cliente por simplicidad
+    cliente = clientes[0]
+    vendidos = 0
+    for bus in buses:
+        while bus.asientos_disponibles() and vendidos < demanda:
+            ok, msg, _ = crear_billete(bus, cliente, billetes)
+            if not ok:
+                return False, msg
+            vendidos += 1
+        if vendidos == demanda:
+            break
+    return True, f"Se vendieron {vendidos} billetes"
 
-    if demanda <= plazas_libres and demanda > 0:
-        nueva_id = max([b.billete_id for b in billetes], default=0) + 1
-        billetes_generados = 0
-        for bus in buses:
-            capacidad_disponible = bus.capacidad - len(bus.billetes)
-            while capacidad_disponible > 0 and billetes_generados < demanda:
-                # Crear Cliente anónimo para demo
-                cliente = Cliente(cliente_id=0, nombre="Anonimo")
-                clientes.append(cliente)
-                asiento = len(bus.billetes) + 1
-                fecha = "2025-09-17"  # fecha fija para demo
-                billete = Billete(nueva_id, bus, cliente, asiento, fecha)
-                bus.agregar_billete(billete)
-                billetes.append(billete)
-                nueva_id += 1
-                billetes_generados += 1
-                capacidad_disponible -= 1
-        mensaje = f"Se vendieron {demanda} billetes"
-        exito = True
-    else:
-        mensaje = "Error: plazas insuficientes o cantidad inválida"
-        exito = False
-    return exito, mensaje
-
-def devolucio(cantidad, billetes, buses):
-    if cantidad <= len(billetes) and cantidad > 0:
-        for _ in range(cantidad):
-            billete = billetes.pop()
-            bus = billete.bus
-            if billete in bus.billetes:
-                bus.billetes.remove(billete)
-        mensaje = f"Se devolvieron {cantidad} billetes"
-        exito = True
-    else:
-        mensaje = "Error: no se puede devolver esa cantidad"
-        exito = False
-    return exito, mensaje
+def devolucio(cantidad: int, billetes: List[Billete], buses: List[Bus]) -> Tuple[bool, str]:
+    if cantidad <= 0:
+        return False, "La cantidad debe ser mayor que 0"
+    if cantidad > len(billetes):
+        return False, "Error: no se puede devolver esa cantidad"
+    for _ in range(cantidad):
+        billete = billetes.pop()  # último vendido
+        if billete in billete.bus.billetes:
+            billete.bus.billetes.remove(billete)
+    return True, f"Se devolvieron {cantidad} billetes"

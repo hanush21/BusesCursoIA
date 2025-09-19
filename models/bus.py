@@ -1,8 +1,8 @@
 class Bus:
-    def init(self, bus_id, placa, capacidad):
-        self.bus_id = bus_id
-        self.placa = placa
-        self.capacidad = capacidad
+    def __init__(self, bus_id, placa, capacidad):
+        self.bus_id = int(bus_id)
+        self.placa = str(placa)
+        self.capacidad = int(capacidad)
         self.billetes = []
 
     def agregar_billete(self, billete):
@@ -11,5 +11,12 @@ class Bus:
         else:
             raise Exception("Capacidad del bus alcanzada")
 
-    def str(self):
-        return f"Bus {self.placa} con capacidad {self.capacidad}"
+    def asientos_ocupados(self):
+        return sorted([b.asiento for b in self.billetes])
+
+    def asientos_disponibles(self):
+        ocupados = set(self.asientos_ocupados())
+        return [n for n in range(1, self.capacidad + 1) if n not in ocupados]
+
+    def __str__(self):
+        return f"Bus(id={self.bus_id}, placa={self.placa}, capacidad={self.capacidad}, ocupados={len(self.billetes)})"
